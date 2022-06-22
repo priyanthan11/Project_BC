@@ -12,5 +12,8 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
-Content/**/*.uasset
-Content/**/*.umap
+!/Content/**/*.uasset
+!/Content/**/*.umap
+# Ignore Animations
+Content/*Characters/**/*.uasset
+Content/*LevelPrototyping/**/*.uasset
