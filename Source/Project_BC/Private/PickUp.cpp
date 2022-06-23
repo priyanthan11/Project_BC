@@ -11,7 +11,7 @@ APickUp::APickUp()
 	// Pickups do not need to tick every seconds
 	PrimaryActorTick.bCanEverTick = false;
 
-	if (ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		bIsActive = true;
 
@@ -36,7 +36,7 @@ bool APickUp::IsActive()
 
 void APickUp::SetActive(bool NewPickUpState)
 {
-	if (ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		bIsActive = NewPickUpState;
 	}

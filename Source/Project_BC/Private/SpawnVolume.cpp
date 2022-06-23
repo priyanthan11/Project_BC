@@ -13,7 +13,7 @@ ASpawnVolume::ASpawnVolume()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	if (ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		WhereToSpawn = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawnVolum"));
 		RootComponent = WhereToSpawn;
@@ -34,8 +34,9 @@ void ASpawnVolume::BeginPlay()
 	Super::BeginPlay();
 	// Set the timer to start spawing pickups
 	SpawnDelay = FMath::FRandRange(SpawnDelayRangeLow, SpawnDelayRangeHeigh);
-	GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickUp, false);
+	GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickUp,SpawnDelay, false);
 
+	UE_LOG(LogTemp, Warning, TEXT("Has Authority"));
 
 }
 
@@ -48,7 +49,7 @@ void ASpawnVolume::Tick(float DeltaTime)
 
 FVector ASpawnVolume::GetRandomePointInVolume()
 {
-	if (WhereToSpawn != nullptr)
+	if (WhereToSpawn)
 	{
 		FVector SpawnOrgin = WhereToSpawn->Bounds.Origin;
 		FVector SpawnExtent = WhereToSpawn->Bounds.BoxExtent;
@@ -61,8 +62,10 @@ FVector ASpawnVolume::GetRandomePointInVolume()
 void ASpawnVolume::SpawnPickUp()
 {
 	// If we are the server and we have something to spawn
-	if (ROLE_Authority && WhatToSpawn != nullptr)
+	if (GetLocalRole() == ROLE_Authority && WhatToSpawn != NULL)
 	{
+		
+
 		// Check valid world
 		if (UWorld* const World = GetWorld())
 		{
@@ -85,11 +88,11 @@ void ASpawnVolume::SpawnPickUp()
 
 			// Delay for a bit before spawning the next pickup
 			SpawnDelay = FMath::FRandRange(SpawnDelayRangeLow, SpawnDelayRangeHeigh);
-			GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickUp, false);
+			GetWorldTimerManager().SetTimer(SpawnTimer, this, &ASpawnVolume::SpawnPickUp, SpawnDelay, false);
 
 		}
 	}
 
-
+	
 }
 
