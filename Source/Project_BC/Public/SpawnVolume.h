@@ -23,4 +23,41 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// ReturnSpawnVolumes Box Component
+	FORCEINLINE class UBoxComponent* GetWheretoSpawn() const { return WhereToSpawn; }
+
+	// Find Randome Point within box/Map
+	UFUNCTION(BlueprintPure, Category = "Spawning")
+	FVector GetRandomePointInVolume();
+
+protected:
+
+	//This is pickup to spawn
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+	TSubclassOf <class APickUp> WhatToSpawn;
+
+	// Access to the timer for spawn
+	FTimerHandle SpawnTimer;
+
+	// Minum Spawn Delay
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	float SpawnDelayRangeLow;
+
+	// Heigh Spawn Delay
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	float SpawnDelayRangeHeigh;
+
+
+private:
+
+	//This is spawn area where pickup were created
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Spawning", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* WhereToSpawn;
+
+	//Handle spawn pickup
+	void SpawnPickUp();
+	// Actual Time in seconds befor spawning next pickup
+	float SpawnDelay;
+
+
 };
