@@ -11,6 +11,7 @@
 #include <Runtime/Engine/Public/Net/UnrealNetwork.h>
 #include "Net/UnrealNetwork.h"
 #include "PickUp.h"
+#include "BatteryPickup.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AProject_BCCharacter
@@ -58,6 +59,12 @@ AProject_BCCharacter::AProject_BCCharacter()
 	CollectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollectionSphere"));
 	CollectionSphere->SetupAttachment(RootComponent);
 	CollectionSphere->SetSphereRadius(CollectionSphereRadius,true);
+	
+	//Set Base Value
+	InitialPower = 200.f;
+	Currentpower = InitialPower;
+
+
 
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -193,6 +200,10 @@ void AProject_BCCharacter::ServerCollectPickups_Implementation()
 {
 	if (GetLocalRole() == ROLE_Authority)
 	{
+		// Track Total power found in batteries
+		float TotalPower = 0.0f;
+
+
 		// Get all overlaping actors and store them into array
 		TArray<AActor*> CollectedActors;
 		CollectionSphere->GetOverlappingActors(CollectedActors);
@@ -205,6 +216,12 @@ void AProject_BCCharacter::ServerCollectPickups_Implementation()
 				APickUp* const TestPickup = Cast<APickUp>(CollectedActors[i]);
 				if (TestPickup != NULL && !TestPickup->IsPendingKill() && TestPickup->IsActive())
 				{
+					// Add Power If we found Batteries
+					if (ABatteryPickup* const TestBattery = Cast<ABatteryPickup>(TestPickup))
+					{
+						TotalPower += TestBattery->GetPower();
+					}
+
 					//Collect the pickup and deactivates it
 					TestPickup->PickedUpBY(this);
 					TestPickup->SetActive(false);
@@ -212,5 +229,12 @@ void AProject_BCCharacter::ServerCollectPickups_Implementation()
 				}
 			}
 
+			// CHange character power based on picked up
+			if (!FMath::IsNearlyZero(TotalPower, 0.001f))
+			{
+				UpdatePower(TotalPower);
+			}
+
 	}
+
 }
