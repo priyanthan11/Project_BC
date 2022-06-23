@@ -29,6 +29,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Pickup")
 	void SetActive(bool NewPickUpState);
 
+	// Function to call when the pickup is collected
+	UFUNCTION(BlueprintNativeEvent, Category = "PickUp")
+	void WasCollected();
+	virtual void WasCollected_Implementation();
+
+	//Server side handling being picked up
+	UFUNCTION(BlueprintAuthorityOnly, Category ="PickUp")
+	virtual void PickedUpBY(APawn* Pawn);
+
 protected:
 
 	// True when the pickup is used
@@ -38,5 +47,13 @@ protected:
 	// THis is called whenerver is active
 	UFUNCTION()
 	virtual void OnRep_IsActive();
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category ="PickUp")
+	APawn* PickUpInstigator;
+	
+private:
+	// Client side handing of being picked up
+	UFUNCTION(NetMulticast,Unreliable)
+	void ClientOnPickedUpBy(APawn* Pawn);
+	void ClientOnPickedUpBy_Implementation(APawn* Pawn);
 
 };

@@ -11,6 +11,8 @@ APickUp::APickUp()
 	// Pickups do not need to tick every seconds
 	PrimaryActorTick.bCanEverTick = false;
 
+	GetStaticMeshComponent()->SetGenerateOverlapEvents(true);
+
 	if (GetLocalRole() == ROLE_Authority)
 	{
 		bIsActive = true;
@@ -45,4 +47,33 @@ void APickUp::SetActive(bool NewPickUpState)
 void APickUp::OnRep_IsActive()
 {
 
+}
+
+
+void APickUp::WasCollected_Implementation()
+{
+
+	// Log a debug message
+
+	UE_LOG(LogClass, Log, TEXT("APickUp::WasCollected_Implementation() %S"), *GetName());
+
+}
+
+void APickUp::PickedUpBY(APawn* Pawn)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		PickUpInstigator = Pawn;
+		// Notify client of the picked up Action
+		ClientOnPickedUpBy(Pawn);
+	}
+
+}
+
+void APickUp::ClientOnPickedUpBy_Implementation(APawn* Pawn)
+{
+	//Store the pawn who picked up(Client)
+	PickUpInstigator = Pawn;
+	//Fire Blueprint Native Event, Which it self cannot be replicated
+	WasCollected();
 }

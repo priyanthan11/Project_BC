@@ -7,6 +7,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SphereComponent.h"
+#include <Runtime/Engine/Public/Net/UnrealNetwork.h>
+#include "Net/UnrealNetwork.h"
+#include "PickUp.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AProject_BCCharacter
@@ -47,8 +51,50 @@ AProject_BCCharacter::AProject_BCCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Set radius to collectionsphere radious.
+	CollectionSphereRadius = 200.0f;
+
+	// Create Collection Sphere
+	CollectionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollectionSphere"));
+	CollectionSphere->SetupAttachment(RootComponent);
+	CollectionSphere->SetSphereRadius(CollectionSphereRadius,true);
+
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+}
+
+void AProject_BCCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AProject_BCCharacter, CollectionSphereRadius);
+	DOREPLIFETIME(AProject_BCCharacter, InitialPower);
+	DOREPLIFETIME(AProject_BCCharacter, Currentpower);
+	
+
+}
+
+
+void AProject_BCCharacter::UpdatePower(float DeltaPower)
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		// Increace or decrease current power
+		Currentpower += DeltaPower;
+
+	}
+}
+
+
+float AProject_BCCharacter::GetInitialPower()
+{
+	return InitialPower;
+}
+
+float AProject_BCCharacter::GetCurrentPower()
+{
+	return Currentpower;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,6 +121,9 @@ void AProject_BCCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AProject_BCCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AProject_BCCharacter::TouchStopped);
+	 
+	// Handle collected Pickups
+	InputComponent->BindAction("CollectPickups", IE_Pressed, this, &AProject_BCCharacter::CollectPickups);
 }
 
 void AProject_BCCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -87,6 +136,7 @@ void AProject_BCCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector L
 	StopJumping();
 }
 
+
 void AProject_BCCharacter::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
@@ -98,7 +148,6 @@ void AProject_BCCharacter::LookUpAtRate(float Rate)
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
-
 void AProject_BCCharacter::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
@@ -125,5 +174,43 @@ void AProject_BCCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+	}
+}
+
+
+void AProject_BCCharacter::CollectPickups()
+{
+
+	// Ask the serve to collect pickups
+	ServerCollectPickups();
+}
+bool AProject_BCCharacter::ServerCollectPickups_Validate()
+{
+
+	return true;
+}
+void AProject_BCCharacter::ServerCollectPickups_Implementation()
+{
+	if (GetLocalRole() == ROLE_Authority)
+	{
+		// Get all overlaping actors and store them into array
+		TArray<AActor*> CollectedActors;
+		CollectionSphere->GetOverlappingActors(CollectedActors);
+
+
+		// Look at each actor inside the collection sphere
+			for (int i = 0; i < CollectedActors.Num(); i++)
+			{
+				// If it is a pickup, and it is valid and active
+				APickUp* const TestPickup = Cast<APickUp>(CollectedActors[i]);
+				if (TestPickup != NULL && !TestPickup->IsPendingKill() && TestPickup->IsActive())
+				{
+					//Collect the pickup and deactivates it
+					TestPickup->PickedUpBY(this);
+					TestPickup->SetActive(false);
+
+				}
+			}
+
 	}
 }
