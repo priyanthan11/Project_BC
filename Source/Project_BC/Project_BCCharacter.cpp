@@ -61,7 +61,7 @@ AProject_BCCharacter::AProject_BCCharacter()
 	CollectionSphere->SetSphereRadius(CollectionSphereRadius,true);
 	
 	//Set Base Value
-	InitialPower = 200.f;
+	InitialPower = 2000.f;
 	Currentpower = InitialPower;
 
 
