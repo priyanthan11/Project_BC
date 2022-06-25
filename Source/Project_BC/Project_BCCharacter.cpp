@@ -65,6 +65,10 @@ AProject_BCCharacter::AProject_BCCharacter()
 	Currentpower = InitialPower;
 
 
+	// Base value for controling movementspeed
+	BaseSpeed = 10.0f;
+	SpeedFactor = 0.75f;
+
 
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
@@ -89,6 +93,11 @@ void AProject_BCCharacter::UpdatePower(float DeltaPower)
 	{
 		// Increace or decrease current power
 		Currentpower += DeltaPower;
+		// Set MovementSpeed based on power level
+		GetCharacterMovement()->MaxWalkSpeed = BaseSpeed + SpeedFactor* Currentpower;
+		// Fake the rep_notify Listion server dosenot get the rep_notify automatically
+		OnRep_CurrentPower();
+
 
 	}
 }
@@ -125,22 +134,13 @@ void AProject_BCCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAxis("Look Up / Down Mouse", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("Look Up / Down Gamepad", this, &AProject_BCCharacter::LookUpAtRate);
 
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AProject_BCCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AProject_BCCharacter::TouchStopped);
-	 
+	
 	// Handle collected Pickups
 	InputComponent->BindAction("CollectPickups", IE_Pressed, this, &AProject_BCCharacter::CollectPickups);
 }
-
-void AProject_BCCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
+void AProject_BCCharacter::OnRep_CurrentPower()
 {
-	Jump();
-}
-
-void AProject_BCCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	StopJumping();
+	PowerChangeEffect();
 }
 
 

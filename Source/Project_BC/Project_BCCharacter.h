@@ -65,12 +65,7 @@ protected:
 	 */
 	void LookUpAtRate(float Rate);
 
-	/** Handler for when a touch input begins. */
-	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
-
-	/** Handler for when a touch input stops. */
-	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
-
+	
 	// Entry called when player prees a key to collect
 	UFUNCTION(BlueprintCallable, Category = "pickup")
 	void CollectPickups();
@@ -89,6 +84,15 @@ protected:
 	float InitialPower;
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", meta = (BlueprintProtected = "true"))
+		float BaseSpeed;
+	// controlling power along with speed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", meta = (BlueprintProtected = "true"))
+		float SpeedFactor;
+	// Update chacter visual based on current power level
+	UFUNCTION(BlueprintImplementableEvent, Category = "Power")
+		void PowerChangeEffect();
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -104,9 +108,11 @@ private:
 	float CollectionSphereRadius;
 
 	// Character current power level during gameplay
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Power")
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentPower, VisibleAnywhere, Category = "Power")
 	float Currentpower;
 
-
+	// Power level updated on clients
+	UFUNCTION()
+	void OnRep_CurrentPower();
 };
 
