@@ -86,9 +86,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", meta = (BlueprintProtected = "true"))
 		float BaseSpeed;
+
 	// controlling power along with speed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", meta = (BlueprintProtected = "true"))
 		float SpeedFactor;
+
 	// Update chacter visual based on current power level
 	UFUNCTION(BlueprintImplementableEvent, Category = "Power")
 		void PowerChangeEffect();

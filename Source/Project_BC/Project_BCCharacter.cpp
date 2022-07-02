@@ -65,7 +65,7 @@ AProject_BCCharacter::AProject_BCCharacter()
 	Currentpower = InitialPower;
 
 
-	// Base value for controling movementspeed
+	// Base value for controlling movementspeed
 	BaseSpeed = 10.0f;
 	SpeedFactor = 0.75f;
 
@@ -155,6 +155,7 @@ void AProject_BCCharacter::LookUpAtRate(float Rate)
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * TurnRateGamepad * GetWorld()->GetDeltaSeconds());
 }
+
 void AProject_BCCharacter::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.0f))
@@ -191,11 +192,13 @@ void AProject_BCCharacter::CollectPickups()
 	// Ask the serve to collect pickups
 	ServerCollectPickups();
 }
+
 bool AProject_BCCharacter::ServerCollectPickups_Validate()
 {
 
 	return true;
 }
+
 void AProject_BCCharacter::ServerCollectPickups_Implementation()
 {
 	if (GetLocalRole() == ROLE_Authority)

@@ -22,11 +22,32 @@ AProject_BCGameMode::AProject_BCGameMode()
 void AProject_BCGameMode::BeginPlay()
 {
 	GetWorldTimerManager().SetTimer(PowerDrainTimer, this, &AProject_BCGameMode::DrainPowerOvertime, PowerDrainDelay, true);
+
+	// Access the world to get to players
+	UWorld* World = GetWorld();
+	check(World);
+
+	for (FConstControllerIterator It = World->GetControllerIterator(); It; ++It)
+	{
+		if (APlayerController* PlayerController = Cast<APlayerController>(*It))
+		{
+			if (AProject_BCCharacter* BatteryCharacter = Cast<AProject_BCCharacter>(PlayerController->GetPawn()))
+			{
+				PowerToWin = BatteryCharacter->GetInitialPower() * 1.25f;
+				break;
+			}
+		}
+	}
 }
 
 float AProject_BCGameMode::GetDecay()
 {
 	return DecayRate;
+}
+
+float AProject_BCGameMode::GetPowerToWin()
+{
+	return PowerToWin;
 }
 
 void AProject_BCGameMode::DrainPowerOvertime()

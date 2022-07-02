@@ -20,6 +20,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Power")
 	float GetDecay();
 
+	// Access the PowerToWin
+	UFUNCTION(BlueprintPure, Category = "Power")
+	float GetPowerToWin();
+
 protected:
 	// How many Times per seconds to update characters power and chech game rules
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Power")
@@ -31,6 +35,10 @@ protected:
 	// The rate at which character lose power % per seconds
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Power", meta = (BlueprintPortected = "true"))
 	float DecayRate;
+
+	// This is the power level need to win
+	UPROPERTY(BlueprintReadWrite, Category = "Power")
+	float PowerToWin;
 
 private:
 
