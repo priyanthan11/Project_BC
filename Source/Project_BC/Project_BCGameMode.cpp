@@ -3,6 +3,7 @@
 #include "Project_BCGameMode.h"
 #include "Project_BCCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "GameFramework/HUD.h"
 
 AProject_BCGameMode::AProject_BCGameMode()
 {
@@ -12,6 +13,14 @@ AProject_BCGameMode::AProject_BCGameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+
+	// Set they type of HUD used in the game
+	static ConstructorHelpers::FClassFinder<AHUD> PlayerHudClass(TEXT("/Game/Blueprints/BC_HUD_BP"));
+	if (PlayerHudClass.Class != NULL)
+	{
+		HUDClass = PlayerHudClass.Class;
+	}
+
 	// Base Decay Rate
 	DecayRate = 0.02f;
 
